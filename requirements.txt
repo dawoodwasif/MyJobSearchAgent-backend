@@ -1,0 +1,10 @@
+flask
+flask-cors
+openai>1,<2
+pdfminer.six
+python-docx
+Jinja2
+docx2txt
+python-dotenv
+requests
+tqdm
