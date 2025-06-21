@@ -7,6 +7,7 @@ import os
 
 # Configuration
 BASE_URL = "http://localhost:5000"
+
 API_KEY = "enter-your-key-here"  # Replace with your OpenAI API key
 
 # Create output directories

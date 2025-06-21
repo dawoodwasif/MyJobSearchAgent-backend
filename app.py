@@ -19,6 +19,11 @@ CORS(app)  # Enable CORS for all routes
 RESUME_STORAGE_DIR = os.path.join(os.path.dirname(__file__), 'resume_storage')
 os.makedirs(RESUME_STORAGE_DIR, exist_ok=True)
 
+
+@app.route("/")
+def home():
+    return "Hello, Flask is live on Render!"
+
 def save_resume_data(file_id, resume_json):
     """Save resume JSON data to file"""
     try:
@@ -295,6 +300,9 @@ def generate_cover_letter_api():
         
         data = request.get_json()
         print(f"DEBUG: Request data keys: {list(data.keys()) if data else 'No data'}")
+
+
+        print(f"DEBUG: Personal info: {data.get('personal_info', {})}")
         
         # Get file_id for request tracking
         file_id = data.get('file_id', 'unknown') if data else 'unknown'
@@ -330,12 +338,12 @@ def generate_cover_letter_api():
         missing_common = [field for field in required_common if field not in data]
         if missing_common:
             return jsonify({"error": f"Missing required fields: {', '.join(missing_common)}", "file_id": file_id}), 400
-        
-        # Extract basic data
+          # Extract basic data
         job_description = data['job_description']
         api_key = data['api_key']
         model_type = data.get('model_type', 'OpenAI')
         model = data.get('model', 'gpt-4o')
+        include_additional_personal_info = data.get('include_additional_personal_info', False)
         
         # Extract personal information with intelligent fallbacks
         personal_info = data.get('personal_info', {})
@@ -451,14 +459,13 @@ def generate_cover_letter_api():
         # Validate and enhance body content
         if not body_content or body_content.strip() == "":
             body_content = f"I am writing to express my strong interest in the {position} position at {company_name}. Thank you for considering my application."
-        
-        # Build optional sections
+          # Build optional sections based on flag
         address_section = ""
-        if personal_info['address']:
+        if include_additional_personal_info and personal_info['address']:
             address_section = f"\n\\address{{{safe_latex_escape(personal_info['address'])}}}"
         
         linkedin_section = ""
-        if personal_info['linkedin']:
+        if include_additional_personal_info and personal_info['linkedin']:
             linkedin_section = f"\n\\homepage{{{safe_latex_escape(personal_info['linkedin'])}}}"
         
         department_section = ""
