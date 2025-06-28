@@ -7,7 +7,7 @@ API_BASE_URL = "http://localhost:5000/api"
 SAMPLE_FOLDER = Path("sample")
 
 # DeepSeek API key
-API_KEY = "sk-6c5ceb9f6a344edca7715fb60923fcb1"  # DeepSeek API key
+API_KEY = "api-key"  # DeepSeek API key
 
 # Default model configuration
 DEFAULT_MODEL_TYPE = "DeepSeek"
