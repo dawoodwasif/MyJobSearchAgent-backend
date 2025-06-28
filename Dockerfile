@@ -1,24 +1,24 @@
-# Use Python 3.8 base image
+# 1) Use the official Python 3.8 slim image (now based on Debian 12 “bookworm”)
 FROM python:3.8-slim
 
-# Optional: avoid interactive prompts
+# avoid any interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install apt packages
+# 2) Copy in your list of TeX + font packages
 COPY packages.txt /tmp/packages.txt
-RUN apt-get update && \
-    xargs -a /tmp/packages.txt apt-get install -y && \
-    rm -rf /var/lib/apt/lists/*
 
-# Set work directory
+# 3) Update & install exactly what's in packages.txt (no extra recommends), then clean up
+RUN apt-get update \
+ && xargs -r -a /tmp/packages.txt apt-get install -y --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/*
+
+# 4) App setup
 WORKDIR /app
-
-# Copy app code and install Python dependencies
 COPY . /app
+
+# 5) Install your Python deps
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the Flask port
+# 6) Expose & run
 EXPOSE 5000
-
-# Start Flask app
 CMD ["flask", "--app", "app", "run", "--host=0.0.0.0", "--port=5000"]
