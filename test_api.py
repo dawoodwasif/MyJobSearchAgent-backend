@@ -9,7 +9,7 @@ import os
 BASE_URL = "http://localhost:5000"
 
 # DeepSeek API key
-API_KEY = "sk-6c5ceb9f6a344edca7715fb60923fcb1" # this is the deepseek api key
+API_KEY = "api-key" # this is the deepseek api key
 
 # Default model configuration
 DEFAULT_MODEL_TYPE = "DeepSeek"
