@@ -56,3 +56,4 @@ venv.bak/
 
 # Resume storage directory
 resume_storage/
+test_output/

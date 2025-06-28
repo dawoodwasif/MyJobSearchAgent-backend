@@ -110,7 +110,7 @@ COVER_LETTER_TEMPLATE = r"""
 \end{document}
 """
 
-def generate_cover_letter_content(api_key, job_description, position, company_name, location, resume_info, model="gpt-4o", model_type="OpenAI"):
+def generate_cover_letter_content(api_key, job_description, position, company_name, location, resume_info, model="deepseek-chat", model_type="DeepSeek"):
     """Generate cover letter content using AI"""
     print(f"DEBUG: generate_cover_letter_content called with model_type={model_type}, model={model}")
     print(f"DEBUG: Position: {position}, Company: {company_name}, Location: {location}")
@@ -133,10 +133,20 @@ def generate_cover_letter_content(api_key, job_description, position, company_na
     
     print(f"DEBUG: Generated prompt length: {len(prompt)}")
     
-    print("DEBUG: Using OpenAI for cover letter generation")
-    client = OpenAI(api_key=api_key)
+    if model_type == "OpenAI":
+        print("DEBUG: Using OpenAI for cover letter generation")
+        client = OpenAI(api_key=api_key)
+    elif model_type == "DeepSeek":
+        print("DEBUG: Using DeepSeek for cover letter generation")
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+    else:
+        print(f"DEBUG: Unsupported model type: {model_type}, falling back to DeepSeek")
+        model_type = "DeepSeek"
+        model = "deepseek-chat"
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        
     try:
-        print("DEBUG: Making OpenAI API call...")
+        print(f"DEBUG: Making {model_type} API call with model {model}...")
         response = client.chat.completions.create(
             model=model,
             messages=[
@@ -145,12 +155,12 @@ def generate_cover_letter_content(api_key, job_description, position, company_na
             ],
         )
         result = response.choices[0].message.content.strip()
-        print(f"DEBUG: OpenAI response received, length: {len(result)}")
+        print(f"DEBUG: API response received, length: {len(result)}")
         print(f"DEBUG: Cover letter content preview: {result[:200]}...")
         return result
     except Exception as e:
-        print(f"DEBUG: OpenAI API error: {str(e)}")
-        raise Exception(f"OpenAI API error: {str(e)}")
+        print(f"DEBUG: API error: {str(e)}")
+        raise Exception(f"API error: {str(e)}")
 
 @app.route('/api/extract-resume-json', methods=['POST'])
 def extract_resume_json():
@@ -183,8 +193,8 @@ def extract_resume_json():
         
         # Get API parameters
         api_key = request.form.get('api_key')
-        model_type = request.form.get('model_type', 'OpenAI')
-        model = request.form.get('model', 'gpt-4o')
+        model_type = request.form.get('model_type', 'DeepSeek')
+        model = request.form.get('model', 'deepseek-chat')
         
         print(f"DEBUG: [File ID: {file_id}] API parameters - model_type: {model_type}, model: {model}")
         print(f"DEBUG: [File ID: {file_id}] API key present: {bool(api_key)}")
@@ -341,8 +351,8 @@ def generate_cover_letter_api():
           # Extract basic data
         job_description = data['job_description']
         api_key = data['api_key']
-        model_type = data.get('model_type', 'OpenAI')
-        model = data.get('model', 'gpt-4o')
+        model_type = data.get('model_type', 'DeepSeek')
+        model = data.get('model', 'deepseek-chat')
         include_additional_personal_info = data.get('include_additional_personal_info', False)
         
         # Extract personal information with intelligent fallbacks
@@ -590,8 +600,8 @@ def optimize_resume():
         job_description = data['job_description']
         template = data['template']
         api_key = data['api_key']
-        model_type = data.get('model_type', 'OpenAI')
-        model = data.get('model', 'gpt-4o')
+        model_type = data.get('model_type', 'DeepSeek')
+        model = data.get('model', 'deepseek-chat')
         section_ordering = data.get('section_ordering', ['education', 'work', 'skills', 'projects', 'awards'])
         improve_resume = data.get('improve_resume', True)
         
@@ -738,8 +748,8 @@ def ai_enhance():
             # Extract form data
             job_description = request.form.get('job_description', '')
             api_key = request.form.get('api_key')
-            model_type = request.form.get('model_type', 'OpenAI')
-            model = request.form.get('model', 'gpt-4o')
+            model_type = request.form.get('model_type', 'DeepSeek')
+            model = request.form.get('model', 'deepseek-chat')
             
             print(f"DEBUG: [File ID: {file_id}] File upload mode - filename: {file.filename}")
             
@@ -769,8 +779,8 @@ def ai_enhance():
             
             job_description = data.get('job_description', '')
             api_key = data.get('api_key')
-            model_type = data.get('model_type', 'OpenAI')
-            model = data.get('model', 'gpt-4o')
+            model_type = data.get('model_type', 'DeepSeek')
+            model = data.get('model', 'deepseek-chat')
             
             print(f"DEBUG: [File ID: {file_id}] JSON input mode")
         
@@ -809,7 +819,7 @@ def ai_enhance():
             "file_id": file_id
         }), 500
 
-def generate_ai_enhancement(resume_json, job_description, api_key, model="gpt-4o", model_type="OpenAI"):
+def generate_ai_enhancement(resume_json, job_description, api_key, model="deepseek-chat", model_type="DeepSeek"):
     """Generate AI-powered enhancement analysis and content"""
     from openai import OpenAI
     
@@ -880,72 +890,81 @@ def generate_ai_enhancement(resume_json, job_description, api_key, model="gpt-4o
     
     if model_type == "OpenAI":
         client = OpenAI(api_key=api_key)
+    elif model_type == "DeepSeek":
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+    else:
+        print(f"DEBUG: Unsupported model type: {model_type}, falling back to DeepSeek")
+        model_type = "DeepSeek"
+        model = "deepseek-chat"
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
         
-        try:
-            # Get analysis
-            analysis_response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": "You are an expert career coach and resume analyst. Provide detailed, actionable feedback in valid JSON format only."},
-                    {"role": "user", "content": analysis_prompt}
-                ],
-                temperature=0.3
-            )
-            
-            analysis_text = analysis_response.choices[0].message.content.strip()
-            print(f"DEBUG: Analysis response length: {len(analysis_text)}")
-            
-            # Clean and parse JSON
-            analysis_text = analysis_text.replace('```json', '').replace('```', '').strip()
-            analysis_data = json.loads(analysis_text)
-            
-            # Get enhancement
-            enhancement_response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": "You are an expert resume writer. Generate enhanced, job-tailored content in valid JSON format only."},
-                    {"role": "user", "content": enhancement_prompt}
-                ],
-                temperature=0.4
-            )
-            
-            enhancement_text = enhancement_response.choices[0].message.content.strip()
-            print(f"DEBUG: Enhancement response length: {len(enhancement_text)}")
-            
-            # Clean and parse JSON
-            enhancement_text = enhancement_text.replace('```json', '').replace('```', '').strip()
-            enhancement_data = json.loads(enhancement_text)
-            
-            # Combine results
-            result = {
-                "success": True,
-                "analysis": analysis_data,
-                "enhancements": enhancement_data,
-                "metadata": {
-                    "model_used": model,
-                    "model_type": model_type,
-                    "timestamp": json.dumps({"timestamp": "2024-01-01T00:00:00Z"}),
-                    "resume_sections_analyzed": list(resume_json.keys())
-                }
+    try:
+        # Get analysis
+        print(f"DEBUG: Making {model_type} API call for analysis with model {model}...")
+        analysis_response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are an expert career coach and resume analyst. Provide detailed, actionable feedback in valid JSON format only."},
+                {"role": "user", "content": analysis_prompt}
+            ],
+            temperature=0.3
+        )
+        
+        analysis_text = analysis_response.choices[0].message.content.strip()
+        print(f"DEBUG: Analysis response length: {len(analysis_text)}")
+        
+        # Clean and parse JSON
+        analysis_text = analysis_text.replace('```json', '').replace('```', '').strip()
+        analysis_data = json.loads(analysis_text)
+        
+        # Get enhancement
+        print(f"DEBUG: Making {model_type} API call for enhancement with model {model}...")
+        enhancement_response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are an expert resume writer. Generate enhanced, job-tailored content in valid JSON format only."},
+                {"role": "user", "content": enhancement_prompt}
+            ],
+            temperature=0.4
+        )
+        
+        enhancement_text = enhancement_response.choices[0].message.content.strip()
+        print(f"DEBUG: Enhancement response length: {len(enhancement_text)}")
+        
+        # Clean and parse JSON
+        enhancement_text = enhancement_text.replace('```json', '').replace('```', '').strip()
+        enhancement_data = json.loads(enhancement_text)
+        
+        # Combine results
+        result = {
+            "success": True,
+            "analysis": analysis_data,
+            "enhancements": enhancement_data,
+            "metadata": {
+                "model_used": model,
+                "model_type": model_type,
+                "timestamp": json.dumps({"timestamp": "2024-01-01T00:00:00Z"}),
+                "resume_sections_analyzed": list(resume_json.keys())
             }
+        }
+        
+        print(f"DEBUG: Combined result keys: {list(result.keys())}")
+        return result
             
-            print(f"DEBUG: Combined result keys: {list(result.keys())}")
-            return result
-            
-        except json.JSONDecodeError as e:
-            print(f"DEBUG: JSON decode error: {str(e)}")
-            return {
-                "success": False,
-                "error": "Failed to parse AI response as JSON",
-                "raw_analysis": analysis_text if 'analysis_text' in locals() else "",
-                "raw_enhancement": enhancement_text if 'enhancement_text' in locals() else ""
-            }
-        except Exception as e:
-            print(f"DEBUG: OpenAI API error: {str(e)}")
-            return {
-                "success": False,
-                "error": f"OpenAI API error: {str(e)}"
-            }
+    except json.JSONDecodeError as e:
+        print(f"DEBUG: JSON decode error: {str(e)}")
+        return {
+            "success": False,
+            "error": "Failed to parse AI response as JSON",
+            "raw_analysis": analysis_text if 'analysis_text' in locals() else "",
+            "raw_enhancement": enhancement_text if 'enhancement_text' in locals() else ""
+        }
+    except Exception as e:
+        print(f"DEBUG: OpenAI API error: {str(e)}")
+        return {
+            "success": False,
+            "error": f"OpenAI API error: {str(e)}"
+        }
     
     else:
         return {

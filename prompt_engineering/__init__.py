@@ -165,15 +165,23 @@ Write a work section for the candidate according to the Work schema. Include onl
 """
 
 
-def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
+def generate_json_resume(cv_text, api_key, model="deepseek-chat", model_type="DeepSeek"):
     """Generate a JSON resume from a CV text"""
     print(f"DEBUG: Starting JSON resume generation with model: {model}, type: {model_type}")
     print(f"DEBUG: CV text length: {len(cv_text)}")
     print(f"DEBUG: First 200 chars of CV: {cv_text[:200]}...")
     
     sections = []
-    print("DEBUG: Initializing OpenAI client")
-    client = OpenAI(api_key=api_key)
+    print("DEBUG: Initializing client for model type: {model_type}")
+    if model_type == "OpenAI":
+        client = OpenAI(api_key=api_key)
+    elif model_type == "DeepSeek":
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+    else:
+        print(f"DEBUG: Unsupported model type: {model_type}, falling back to DeepSeek")
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        model_type = "DeepSeek"
+        model = "deepseek-chat"
 
     prompts = [
         ("BASICS", BASICS_PROMPT),
@@ -191,7 +199,7 @@ def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
         print(f"DEBUG: Filled prompt length for {prompt_name}: {len(filled_prompt)}")
         
         try:
-            print(f"DEBUG: Making OpenAI API call for {prompt_name}...")
+            print(f"DEBUG: Making API call for {prompt_name} using {model_type} with model {model}...")
             response = client.chat.completions.create(
                 model=model,
                 messages=[
@@ -200,7 +208,7 @@ def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
                 ],
             )
             answer = response.choices[0].message.content
-            print(f"DEBUG: OpenAI response received for {prompt_name}, length: {len(answer)}")
+            print(f"DEBUG: API response received for {prompt_name}, length: {len(answer)}")
             
             print(f"DEBUG: Raw response for {prompt_name}: {answer[:200]}...")
             
@@ -258,17 +266,26 @@ def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
     return final_json
 
 
-def tailor_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
+def tailor_resume(cv_text, api_key, model="deepseek-chat", model_type="DeepSeek"):
     print(f"DEBUG: Starting resume tailoring with model: {model}, type: {model_type}")
     print(f"DEBUG: CV text length for tailoring: {len(cv_text)}")
     
     filled_prompt = TAILORING_PROMPT.replace("<CV_TEXT>", cv_text)
     print(f"DEBUG: Filled tailoring prompt length: {len(filled_prompt)}")
     
-    print("DEBUG: Using OpenAI for resume tailoring")
-    client = OpenAI(api_key=api_key)
+    print(f"DEBUG: Using {model_type} for resume tailoring with model {model}")
+    if model_type == "OpenAI":
+        client = OpenAI(api_key=api_key)
+    elif model_type == "DeepSeek":
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+    else:
+        print(f"DEBUG: Unsupported model type: {model_type}, falling back to DeepSeek")
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        model_type = "DeepSeek"
+        model = "deepseek-chat"
+    
     try:
-        print("DEBUG: Making OpenAI API call for tailoring...")
+        print(f"DEBUG: Making {model_type} API call for tailoring...")
         response = client.chat.completions.create(
             model=model,
             messages=[
@@ -277,10 +294,10 @@ def tailor_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
             ],
         )
         answer = response.choices[0].message.content.strip().strip('"').strip("'").rstrip('.') + '.'
-        print(f"DEBUG: OpenAI tailoring response received, length: {len(answer)}")
+        print(f"DEBUG: API tailoring response received, length: {len(answer)}")
         print(f"DEBUG: Tailored text preview: {answer[:300]}...")
         return answer
     except Exception as e:
-        print(f"DEBUG: OpenAI tailoring failed: {e}")
+        print(f"DEBUG: API tailoring failed: {e}")
         print("DEBUG: Returning original CV text")
         return cv_text

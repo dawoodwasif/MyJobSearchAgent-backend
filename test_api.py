@@ -8,7 +8,12 @@ import os
 # Configuration
 BASE_URL = "http://localhost:5000"
 
-API_KEY = "enter-your-key-here"  # Replace with your OpenAI API key
+# DeepSeek API key
+API_KEY = "sk-6c5ceb9f6a344edca7715fb60923fcb1" # this is the deepseek api key
+
+# Default model configuration
+DEFAULT_MODEL_TYPE = "DeepSeek"
+DEFAULT_MODEL = "deepseek-chat"
 
 # Create output directories
 OUTPUT_DIR = Path("test_output")
@@ -108,8 +113,8 @@ def test_extract_resume_json(file_path):
             data = {
                 'file_id': file_id,
                 'api_key': API_KEY,
-                'model_type': 'OpenAI',
-                'model': 'gpt-4o'
+                'model_type': DEFAULT_MODEL_TYPE,
+                'model': DEFAULT_MODEL
             }
             
             print(f"Uploading file: {Path(file_path).name}")
@@ -162,8 +167,8 @@ def test_ai_enhance_with_json(resume_json, job_description):
         'resume_json': resume_json,
         'job_description': job_description,
         'api_key': API_KEY,
-        'model_type': 'OpenAI',
-        'model': 'gpt-4o'
+        'model_type': DEFAULT_MODEL_TYPE,
+        'model': DEFAULT_MODEL
     }
     
     try:
@@ -224,8 +229,8 @@ def test_optimize_resume_with_file_id(file_id, job_description, template="Simple
         'job_description': job_description,
         'template': template,
         'api_key': API_KEY,
-        'model_type': 'OpenAI',
-        'model': 'gpt-4o',
+        'model_type': DEFAULT_MODEL_TYPE,
+        'model': DEFAULT_MODEL,
         'section_ordering': ['education', 'work', 'skills', 'projects', 'awards'],
         'improve_resume': True
     }
@@ -280,8 +285,8 @@ def test_generate_cover_letter_with_file_id(file_id, job_info):
         'file_id': file_id,
         'job_description': job_info['description'],
         'api_key': API_KEY,
-        'model_type': 'OpenAI',
-        'model': 'gpt-4o',
+        'model_type': DEFAULT_MODEL_TYPE,
+        'model': DEFAULT_MODEL,
         'personal_info': job_info['personal_info'],
         'company_info': {
             'position': job_info['position'],
@@ -345,8 +350,8 @@ def test_ai_enhance_with_file_id(file_id, job_description):
         'file_id': file_id,
         'job_description': job_description,
         'api_key': API_KEY,
-        'model_type': 'OpenAI',
-        'model': 'gpt-4o'
+        'model_type': DEFAULT_MODEL_TYPE,
+        'model': DEFAULT_MODEL
     }
     
     try:
@@ -499,8 +504,8 @@ def test_optimize_resume(resume_json, job_description, template="Simple"):
         'job_description': job_description,
         'template': template,
         'api_key': API_KEY,
-        'model_type': 'OpenAI',
-        'model': 'gpt-4o',
+        'model_type': DEFAULT_MODEL_TYPE,
+        'model': DEFAULT_MODEL,
         'section_ordering': ['education', 'work', 'skills', 'projects', 'awards'],
         'improve_resume': True
     }
@@ -555,8 +560,8 @@ def test_generate_cover_letter(resume_json, job_info):
         'resume_json': resume_json,
         'job_description': job_info['description'],
         'api_key': API_KEY,
-        'model_type': 'OpenAI',
-        'model': 'gpt-4o',
+        'model_type': DEFAULT_MODEL_TYPE,
+        'model': DEFAULT_MODEL,
         'personal_info': job_info['personal_info'],
         'company_info': {
             'position': job_info['position'],
@@ -625,8 +630,8 @@ def test_file_id_consistency():
             'resume_json': sample_resume,
             'job_description': job_description,
             'api_key': API_KEY,
-            'model_type': 'OpenAI',
-            'model': 'gpt-4o'
+            'model_type': DEFAULT_MODEL_TYPE,
+            'model': DEFAULT_MODEL
         }
         
         try:
@@ -701,7 +706,9 @@ def check_api_key():
         print("   Set OPENAI_API_KEY environment variable for full testing")
         return False
     else:
-        print(f"✓ Using API key: {API_KEY[:8]}...")
+        print(f"✓ Using DeepSeek API key: {API_KEY[:8]}...")
+        print(f"✓ Using model type: {DEFAULT_MODEL_TYPE}")
+        print(f"✓ Using model: {DEFAULT_MODEL}")
         return True
 
 def print_final_summary():

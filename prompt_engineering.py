@@ -166,7 +166,7 @@ Write a work section for the candidate according to the Work schema. Include onl
 """
 
 
-def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
+def generate_json_resume(cv_text, api_key, model="deepseek-chat", model_type="DeepSeek"):
     """Generate a JSON resume from a CV text"""
     print(f"DEBUG: Starting JSON resume generation with model: {model}, type: {model_type}")
     print(f"DEBUG: CV text length: {len(cv_text)}")
@@ -175,6 +175,8 @@ def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
     sections = []
     if model_type == "OpenAI":
         client = OpenAI(api_key=api_key)
+    elif model_type == "DeepSeek":
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     elif model_type == "Gemini":
         genai.configure(api_key=api_key)
         model_instance = genai.GenerativeModel(model)
@@ -195,6 +197,15 @@ def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
         
         try:
             if model_type == "OpenAI":
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": filled_prompt},
+                    ],
+                )
+                answer = response.choices[0].message.content
+            elif model_type == "DeepSeek":
                 response = client.chat.completions.create(
                     model=model,
                     messages=[
@@ -247,7 +258,7 @@ def generate_json_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
     return final_json
 
 
-def tailor_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
+def tailor_resume(cv_text, api_key, model="deepseek-chat", model_type="DeepSeek"):
     filled_prompt = TAILORING_PROMPT.replace("<CV_TEXT>", cv_text)
     if model_type == "OpenAI":
         client = OpenAI(api_key=api_key)
@@ -264,6 +275,22 @@ def tailor_resume(cv_text, api_key, model="gpt-4o", model_type="OpenAI"):
         except Exception as e:
             print(e)
             print("Failed to tailor resume.")
+            return cv_text
+    elif model_type == "DeepSeek":
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_TAILORING},
+                    {"role": "user", "content": filled_prompt},
+                ],
+            )
+            answer = response.choices[0].message.content.strip().strip('"').strip("'").rstrip('.') + '.'
+            return answer
+        except Exception as e:
+            print(e)
+            print("Failed to tailor resume with DeepSeek.")
             return cv_text
     elif model_type == "Gemini":
         genai.configure(api_key=api_key)

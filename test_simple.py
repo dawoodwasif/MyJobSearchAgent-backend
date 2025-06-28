@@ -5,7 +5,13 @@ import json
 # Configuration
 API_BASE_URL = "http://localhost:5000/api"
 SAMPLE_FOLDER = Path("sample")
-API_KEY = "enter-your-key-here"  # Replace with your OpenAI API key
+
+# DeepSeek API key
+API_KEY = "sk-6c5ceb9f6a344edca7715fb60923fcb1"  # DeepSeek API key
+
+# Default model configuration
+DEFAULT_MODEL_TYPE = "DeepSeek"
+DEFAULT_MODEL = "deepseek-chat"
 
 def test_health_first():
     """Test if the API is responding at all"""
@@ -34,8 +40,8 @@ def test_with_smaller_file():
         files = {'file': ('test_resume.txt', test_content.encode(), 'text/plain')}
         data = {
             'api_key': API_KEY,
-            'model_type': 'OpenAI',
-            'model': 'gpt-4o'
+            'model_type': DEFAULT_MODEL_TYPE,
+            'model': DEFAULT_MODEL
         }
         
         response = requests.post(f"{API_BASE_URL}/extract-resume-json", 
@@ -90,12 +96,13 @@ def test_file_upload_debug():
             files = {'file': (resume_file.name, f, mime_type)}
             data = {
                 'api_key': API_KEY,
-                'model_type': 'OpenAI',
-                'model': 'gpt-4o'
+                'model_type': DEFAULT_MODEL_TYPE,
+                'model': DEFAULT_MODEL
             }
             
             print("Sending request...")
             print("⏳ This may take a while for PDF processing...")
+            print(f"Using model: {DEFAULT_MODEL_TYPE}/{DEFAULT_MODEL}")
             
             # Try with a longer timeout and chunked upload
             response = requests.post(f"{API_BASE_URL}/extract-resume-json", 
@@ -224,6 +231,10 @@ def test_text_extraction_only():
 def main():
     print("=" * 50)
     print("GenApply API Debug Test")
+    print("=" * 50)
+    print(f"Using API: {API_BASE_URL}")
+    print(f"Using model: {DEFAULT_MODEL_TYPE}/{DEFAULT_MODEL}")
+    print(f"Using API key: {API_KEY[:5]}...{API_KEY[-4:]}")
     print("=" * 50)
     
     # Step 1: Check if API is alive
