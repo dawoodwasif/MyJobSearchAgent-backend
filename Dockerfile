@@ -1,26 +1,39 @@
-### 1) Builder: install TeX Live, build PDF
-FROM ubuntu:22.04 AS builder
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      texlive-latex-base texlive-latex-recommended texlive-xetex latexmk \
-      cm-super \
- && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /src
-COPY . /src
-RUN latexmk -pdf -silent main.tex   # <-- adjust to your .tex filename
-
-### 2) Runtime: tiny Flask image with just the PDF + Python
+# Use Python 3.8 base image
 FROM python:3.8-slim
 
-WORKDIR /app
-COPY --from=builder /src/main.pdf /app/
+# Optional: avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
 
-COPY requirements.txt /app/
+# Install apt packages
+COPY packages.txt /tmp/packages.txt
+RUN apt-get update && \
+    xargs -a /tmp/packages.txt apt-get install -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set work directory
+WORKDIR /app
+
+# Copy app code and install Python dependencies
+COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app   # your Flask code if it needs to read templates etc.
-
+# Expose the Flask port
 EXPOSE 5000
-CMD ["flask","--app","app","run","--host=0.0.0.0","--port=5000"]
+
+# Start Flask app
+CMD ["flask", "--app", "app", "run", "--host=0.0.0.0", "--port=5000"]
+
+
+packages.txt:
+
+texlive-latex-base
+texlive-latex-recommended
+texlive-latex-extra
+texlive-xetex
+fonts-noto
+fonts-freefont-otf
+fonts-freefont-ttf
+cm-super
+texlive-fonts-extra
+texlive-fonts-recommended
+texlive-fonts-extra-links
