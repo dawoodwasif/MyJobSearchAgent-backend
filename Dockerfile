@@ -1,23 +1,44 @@
-# 1. Use the full Bullseye variant so all texlive-* and fonts-* metas live in main
-FROM python:3.8-bullseye
+#########################
+# 1) BUILDER: Ubuntu + TeX Live
+#########################
+FROM ubuntu:22.04 AS tex-builder
 
-# 2. Avoid any interactive prompts during apt installs
+# avoid prompts, install only what you list
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 3. Bring in your TeX + font package list
+# copy your exact packages list
 COPY packages.txt /tmp/packages.txt
 
-# 4. Update, install exactly what's in packages.txt (no extra recommends), then clean up
+# install TeX Live + fonts
 RUN apt-get update \
  && xargs -r -a /tmp/packages.txt \
       apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
-# 5. Set up your Flask app
+# copy in your .tex sources
+WORKDIR /src
+COPY . /src
+
+# build all .tex files to PDF (adjust the command to your filenames)
+RUN for f in *.tex; do \
+      pdflatex -interaction=batchmode "$f"; \
+    done
+
+#########################
+# 2) RUNTIME: slim Python + PDFs
+#########################
+FROM python:3.8-slim
+
 WORKDIR /app
-COPY . /app
+
+# copy only the generated PDFs from the builder
+COPY --from=tex-builder /src/*.pdf /app/
+
+# now bring in your Flask app
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 6. Expose & run
+COPY . /app
+
 EXPOSE 5000
 CMD ["flask","--app","app","run","--host=0.0.0.0","--port=5000"]
