@@ -1,8 +1,5 @@
 # Use Python 3.8 base image
-FROM python:3.8-bullseye
-
-# Optional: avoid interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
+FROM ubuntu:22.04 AS builder
 
 # Install apt packages
 COPY packages.txt /tmp/packages.txt
@@ -10,6 +7,9 @@ COPY packages.txt /tmp/packages.txt
 RUN apt-get update && \
     xargs -a /tmp/packages.txt apt-get install -y && \
     rm -rf /var/lib/apt/lists/*
+
+
+FROM python:3.8-slim
 
 # Set work directory
 WORKDIR /app
