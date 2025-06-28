@@ -5,9 +5,8 @@ RESTful API for resume processing, cover letter generation, and resume optimizat
 
 ## Setup
 ```bash
-cd streamlit-backend/src
-pip install -r requirements_api.txt
-python api.py
+pip install -r requirements.txt
+python app.py
 ```
 
 ## Endpoints
