@@ -1,5 +1,5 @@
 # Use Python 3.8 base image
-FROM python:3.8-slim
+FROM python:3.8-slim-bullseye
 
 # Optional: avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
