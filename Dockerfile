@@ -6,7 +6,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install apt packages
 COPY packages.txt /tmp/packages.txt
-RUN apt-get update && \
+
+RUN sed -i 's/main/main contrib non-free/' /etc/apt/sources.list && \
+    apt-get update && \
     xargs -a /tmp/packages.txt apt-get install -y && \
     rm -rf /var/lib/apt/lists/*
 
